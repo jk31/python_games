@@ -117,7 +117,7 @@ def main():
         for box in box_list:
             box.moving()
 
-        # detect if boxes hit
+        # detect if boxes hit by bird
         if pg.sprite.spritecollideany(bird, box_list):
             print("HIT", time.time())
             END = time.time()
