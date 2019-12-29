@@ -85,14 +85,14 @@ def main():
 
     # create objects manually
     bird = Bird([10, 10])
-    bird.rect.x = 500
+    bird.rect.x = SIZE_X/2
     bird.rect.y = 500
     sprite_list.add(bird)
 
-    for i in range(10):
+    for i in range(20):
         box = Box()
         box.rect.x = random.randrange(SIZE_X)
-        box.rect.y = random.randrange(50)
+        box.rect.y = random.randrange(100)
         box.speed = [random.choice([-8, -7, -6, -5, -4, 4, 5, 6, 7, 8]),
                      random.choice([-8, -7, -6, -5, -4, 4, 5, 6, 7, 8])]
         box_list.add(box)
@@ -122,30 +122,36 @@ def main():
             print("HIT", time.time())
             END = time.time()
 
+            #time.sleep(1)
+
             # GAME OVER STATE
-            while True:
-                for event in pg.event.get():
-                    if event.type == QUIT:
-                        pg.quit()
-                        sys.exit()
+            #game_over(START, END)
 
-                keys = pg.key.get_pressed()
 
-                if keys[K_RETURN]:
-                    print("restart")
-                    main()
+        pg.display.update()
+        fpsClock.tick(30)
 
-                surface.fill((0, 0 ,0))
-                msg = f"Game Over - Survived {round(END - START, 2)} seconds"
-                text = font.render(msg, True, (255, 255, 255))
-                text_rect = text.get_rect()
-                text_x = surface.get_width() / 2 - text_rect.width / 2
-                text_y = surface.get_height() / 2 - text_rect.height / 2
+def game_over(START, END):
+    while True:
+        for event in pg.event.get():
+            if event.type == QUIT:
+                pg.quit()
+                sys.exit()
 
-                surface.blit(text, [text_x, text_y])
+        keys = pg.key.get_pressed()
 
-                pg.display.update()
-                fpsClock.tick(30)
+        if keys[K_RETURN] or keys[K_SPACE]:
+            print("restart")
+            main()
+
+        surface.fill((0, 0, 0))
+        msg = f"Game Over - Survived {round(END - START, 2)} seconds"
+        text = font.render(msg, True, (255, 255, 255))
+        text_rect = text.get_rect()
+        text_x = surface.get_width() / 2 - text_rect.width / 2
+        text_y = surface.get_height() / 2 - text_rect.height / 2
+
+        surface.blit(text, [text_x, text_y])
 
         pg.display.update()
         fpsClock.tick(30)
