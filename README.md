@@ -4,7 +4,7 @@ A few games
 
 #### flappybird.py
 
-<img src="flappybird.png">
+<img style="border: 1px solid black;" src="flappybird.png">
 
 * Use the "SPACE" key to jump and to avoid the red boxes
 * TODO
@@ -13,7 +13,7 @@ A few games
   
 #### survive.py
 
-<img src="survive.png">
+<img style="border: 1px solid black;" src="survive.png">
 
 * Use the "WASD" keys to avoid the red boxes
 * TODO
