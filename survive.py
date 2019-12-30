@@ -7,8 +7,12 @@ fpsClock = pg.time.Clock()
 SIZE_X, SIZE_Y = 800, 600
 surface = pg.display.set_mode((SIZE_X, SIZE_Y))
 font = pg.font.Font(None, 36)
-surfsize = surface.get_size()
-pg.display.set_caption("Game")
+pg.display.set_caption("Survive")
+
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+RED = (255, 0, 0)
+
 
 
 class Bird(pg.sprite.Sprite):
@@ -16,7 +20,7 @@ class Bird(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
 
         self.image = pg.Surface([10, 10])
-        self.image.fill((0, 0, 0))
+        self.image.fill(BLACK)
 
         self.speed = speed
         self.status = "Is a bird."
@@ -61,10 +65,10 @@ class Box(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
 
         self.image = pg.Surface([20, 20])
-        self.image.fill((255, 0, 0))
+        self.image.fill(RED)
 
         self.speed = speed
-        self.status = "Is a bird."
+        self.status = "Is a box."
 
         self.rect = self.image.get_rect()
 
@@ -100,7 +104,7 @@ def main():
 
     START = time.time()
     while True:
-        surface.fill((255, 255, 255))
+        surface.fill(WHITE)
 
         for event in pg.event.get():
             if event.type == QUIT:
@@ -125,7 +129,7 @@ def main():
             #time.sleep(1)
 
             # GAME OVER STATE
-            #game_over(START, END)
+            game_over(START, END)
 
 
         pg.display.update()
