@@ -85,12 +85,14 @@ class Box(pg.sprite.Sprite):
 def main():
 
     sprite_list = pg.sprite.Group()
+    bird_list = pg.sprite.Group()
     box_list = pg.sprite.Group()
 
     # create objects manually
     bird = Bird([10, 10])
     bird.rect.x = SIZE_X/2
     bird.rect.y = 500
+    bird_list.add(bird)
     sprite_list.add(bird)
 
     for i in range(20):
@@ -116,21 +118,42 @@ def main():
 
         bird.moving(keys)
 
-        sprite_list.draw(surface)
 
         for box in box_list:
             box.moving()
 
+        # ALL LOT TESTING FOR THE NEAT app
+
         # detect if boxes hit by bird
-        if pg.sprite.spritecollideany(bird, box_list):
-            print("HIT", time.time())
-            END = time.time()
+        # for b in bird_list:
+        #     if pg.sprite.spritecollideany(b, box_list):
+        #         print(b)
+        #         print(pg.sprite.spritecollideany(b, box_list))
+        #
+        #         print("HIT", time.time())
+
+        # col = pg.sprite.groupcollide(bird_list, box_list, False, False)
+        # if col:
+        #     print("HIT", time.time())
+        #     bird_hit = list(col.items())[0][0]
+        #     box_hit = list(col.items())[0][1][0]
+        #
+        #     print(box_hit, bird_hit)
+
+            #pg.sprite.Sprite.kill(box_hit)
+        for b in box_list:
+            for x, bi in enumerate(bird_list):
+                if pg.sprite.collide_rect(b, bi):
+                    print("HIT", b, x, bi)
+
+                    END = time.time()
 
             #time.sleep(1)
 
             # GAME OVER STATE
-            game_over(START, END)
+                    game_over(START, END)
 
+        sprite_list.draw(surface)
 
         pg.display.update()
         fpsClock.tick(30)

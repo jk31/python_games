@@ -3,6 +3,7 @@ import os, sys, random, math, time
 from pygame.locals import *
 
 import neat
+import pickle
 
 
 pg.init()
@@ -19,7 +20,7 @@ RED = (255, 0, 0)
 
 
 class Bird(pg.sprite.Sprite):
-    def __init__(self, speed):
+    def __init__(self, speed = 15):
         pg.sprite.Sprite.__init__(self)
 
         self.image = pg.Surface([20, 20])
@@ -30,27 +31,15 @@ class Bird(pg.sprite.Sprite):
 
         self.rect = self.image.get_rect()
 
-    def moving(self, keys):
-        if (keys[pg.K_w] and keys[pg.K_d]):
-            self.rect.y += -self.speed[1]
-            self.rect.x += self.speed[0]
-        elif (keys[pg.K_s] and keys[pg.K_d]):
-            self.rect.y += self.speed[1]
-            self.rect.x += self.speed[0]
-        elif (keys[pg.K_s] and keys[pg.K_a]):
-            self.rect.y += self.speed[1]
-            self.rect.x += -self.speed[0]
-        elif (keys[pg.K_w] and keys[pg.K_a]):
-            self.rect.y += -self.speed[1]
-            self.rect.x += -self.speed[0]
-        elif keys[pg.K_w]:
-            self.rect.y += -self.speed[1]
-        elif keys[pg.K_s]:
-            self.rect.y += self.speed[1]
-        elif keys[pg.K_d]:
-            self.rect.x += self.speed[0]
-        elif keys[pg.K_a]:
-            self.rect.x += -self.speed[0]
+    def moving(self, direction):
+        if direction == "W":
+            self.rect.y += -self.speed
+        elif direction == "S":
+            self.rect.y += self.speed
+        elif direction == "D":
+            self.rect.x += self.speed
+        elif direction == "A":
+            self.rect.x += -self.speed
 
         # wall check
         if self.rect.right> SIZE_X:
@@ -64,7 +53,7 @@ class Bird(pg.sprite.Sprite):
 
 
 class Box(pg.sprite.Sprite):
-    def __init__(self, speed = [5, 5]):
+    def __init__(self, speed = [10, 10]):
         pg.sprite.Sprite.__init__(self)
 
         self.image = pg.Surface([40, 40])
@@ -87,20 +76,23 @@ class Box(pg.sprite.Sprite):
 
 def main(genomes, config):
 
+    counter = 0
+
     sprite_list = pg.sprite.Group()
-    bird_list = pg.Sprite.Group()
+    bird_list = pg.sprite.Group()
     box_list = pg.sprite.Group()
 
     nets = []
     ge = []
+
     #birds = []
 
-    for g in genomes:
-        net = neat.nn.feed_forward(g, config)
-        net.append(net)
+    for genome_id, g in genomes:
+        net = neat.nn.FeedForwardNetwork.create(g, config)
+        nets.append(net)
 
         bird = Bird()
-        bird.rect.x = SIZE_X / 2
+        bird.rect.x = random.randrange(50, SIZE_X)
         bird.rect.y = 500
         bird_list.add(bird)
         sprite_list.add(bird)
@@ -108,24 +100,17 @@ def main(genomes, config):
         g.fitness = 0
         ge.append(g)
 
-
-    # bird = Bird([10, 10])
-    # bird.rect.x = SIZE_X/2
-    # bird.rect.y = 500
-    # bird_list.add(bird)
-    # sprite_list.add(bird)
-
     for i in range(10):
         box = Box()
         box.rect.x = random.randrange(SIZE_X)
         box.rect.y = random.randrange(100)
-        box.speed = [random.choice([-8, -7, -6, -5, -4, 4, 5, 6, 7, 8]),
-                     random.choice([-8, -7, -6, -5, -4, 4, 5, 6, 7, 8])]
+        box.speed = [random.choice([-11, -10, -9 -8, 8, 9, 10, 11]),
+                     random.choice([-11, -10, -9 -8, 8, 9, 10, 11])]
         box_list.add(box)
         sprite_list.add(box)
 
     START = time.time()
-    while True:
+    while True and len(bird_list) > 0:
         surface.fill(WHITE)
 
         for event in pg.event.get():
@@ -138,21 +123,65 @@ def main(genomes, config):
 
         bird.moving(keys)
 
-        sprite_list.draw(surface)
+        # for a in box_list:
+        #     print(a.rect.x)
+        #     print("##########")
+
+        for x, bi in enumerate(bird_list):
+            #bi.moving()
+            ge[x].fitness += 0.01
+
+            out = [bi.rect.x, bi.rect.y]
+            out.extend([i.rect.x for i in box_list])
+            out.extend([i.rect.y for i in box_list])
+            #print("out", out)
+            output = nets[x].activate(out)
+
+            if output[0] > 0.5:
+                bi.moving("W")
+            if output[1] > 0.5:
+                bi.moving("S")
+            if output[2] > 0.5:
+                bi.moving("D")
+            if output[3] > 0.5:
+                bi.moving("A")
 
         for box in box_list:
             box.moving()
 
         # detect if boxes hit by bird
-        if pg.sprite.groupcollideany(bird_list, box_list):
-            print("HIT", time.time())
-            END = time.time()
+        to_kill = []
+        for b in box_list:
+            for x, bi in enumerate(bird_list):
+                if pg.sprite.collide_rect(b, bi):
+                    ge[x].fitness -= 1
 
-            #time.sleep(1)
+                    to_kill.append(x)
 
-            # GAME OVER STATE
-            #game_over(START, END)
+                    # nets.pop(x)
+                    # ge.pop(x)
+                    pg.sprite.Sprite.kill(bi)
 
+        new_ge = []
+        for i in ge:
+            if ge.index(i) not  in to_kill:
+                new_ge.append(i)
+
+
+                END = time.time()
+
+                #time.sleep(1)
+
+                # GAME OVER STATE
+                #game_over(START, END)
+
+        counter += 1
+        if counter == 200:
+            for g in ge:
+                g.fitness += 5
+            counter = 0
+
+        sprite_list.draw(surface)
 
         pg.display.update()
         fpsClock.tick(30)
@@ -180,9 +209,9 @@ def game_over(START, END):
         surface.blit(text, [text_x, text_y])
 
         pg.display.update()
-        fpsClock.tick(30)
+        fpsClock.tick(60)
 
-def run():
+def run(config_file):
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
                                 neat.DefaultSpeciesSet, neat.DefaultStagnation,
                                 config_path)
@@ -193,7 +222,9 @@ def run():
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
 
-    winner = p.run(main,50)
+    winner = p.run(main,100)
+    print('\nBest genome:\n{!s}'.format(winner))
+    pickle.dump(winner, f"{time.time()}.pickle")
 
 
 if __name__ == '__main__':
