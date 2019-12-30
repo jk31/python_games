@@ -2,6 +2,9 @@ import pygame as pg
 import os, sys, random, math, time
 from pygame.locals import *
 
+import neat
+
+
 pg.init()
 fpsClock = pg.time.Clock()
 SIZE_X, SIZE_Y = 800, 600
@@ -19,7 +22,7 @@ class Bird(pg.sprite.Sprite):
     def __init__(self, speed):
         pg.sprite.Sprite.__init__(self)
 
-        self.image = pg.Surface([10, 10])
+        self.image = pg.Surface([20, 20])
         self.image.fill(BLACK)
 
         self.speed = speed
@@ -64,7 +67,7 @@ class Box(pg.sprite.Sprite):
     def __init__(self, speed = [5, 5]):
         pg.sprite.Sprite.__init__(self)
 
-        self.image = pg.Surface([20, 20])
+        self.image = pg.Surface([40, 40])
         self.image.fill(RED)
 
         self.speed = speed
@@ -82,18 +85,37 @@ class Box(pg.sprite.Sprite):
         if (self.rect.bottom >= SIZE_Y and self.speed[1] > 0) or (self.rect.top <= 0 and self.speed[1] < 0):
             self.speed[1] = -self.speed[1]
 
-def main():
+def main(genomes, config):
 
     sprite_list = pg.sprite.Group()
+    bird_list = pg.Sprite.Group()
     box_list = pg.sprite.Group()
 
-    # create objects manually
-    bird = Bird([10, 10])
-    bird.rect.x = SIZE_X/2
-    bird.rect.y = 500
-    sprite_list.add(bird)
+    nets = []
+    ge = []
+    #birds = []
 
-    for i in range(20):
+    for g in genomes:
+        net = neat.nn.feed_forward(g, config)
+        net.append(net)
+
+        bird = Bird()
+        bird.rect.x = SIZE_X / 2
+        bird.rect.y = 500
+        bird_list.add(bird)
+        sprite_list.add(bird)
+
+        g.fitness = 0
+        ge.append(g)
+
+
+    # bird = Bird([10, 10])
+    # bird.rect.x = SIZE_X/2
+    # bird.rect.y = 500
+    # bird_list.add(bird)
+    # sprite_list.add(bird)
+
+    for i in range(10):
         box = Box()
         box.rect.x = random.randrange(SIZE_X)
         box.rect.y = random.randrange(100)
@@ -122,14 +144,14 @@ def main():
             box.moving()
 
         # detect if boxes hit by bird
-        if pg.sprite.spritecollideany(bird, box_list):
+        if pg.sprite.groupcollideany(bird_list, box_list):
             print("HIT", time.time())
             END = time.time()
 
             #time.sleep(1)
 
             # GAME OVER STATE
-            game_over(START, END)
+            #game_over(START, END)
 
 
         pg.display.update()
@@ -160,5 +182,21 @@ def game_over(START, END):
         pg.display.update()
         fpsClock.tick(30)
 
+def run():
+    config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                                neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                                config_path)
+
+    p = neat.Population(config)
+
+    p.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
+
+    winner = p.run(main,50)
+
+
 if __name__ == '__main__':
-    main()
+    local_dir = os.path.dirname(__file__)
+    config_path = os.path.join(local_dir, "conf_NEAT_survive.txt")
+    run(config_path)

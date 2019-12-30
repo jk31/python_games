@@ -30,19 +30,8 @@ class Bird(pg.sprite.Sprite):
         if keys[pg.K_SPACE]:
             self.rect.bottom -= 10
 
-        # wall check
-        # if self.rect.right> SIZE_X:
-        #     self.rect.x = SIZE_X -self.image.get_width()
-        # if self.rect.left < 0:
-        #     self.rect.x = 0
-        # if self.rect.bottom > SIZE_Y:
-        #     self.rect.y = SIZE_Y - self.image.get_height()
-        # if self.rect.top < 0:
-        #     self.rect.y = 0
-
     def gravity(self):
         self.rect.bottom += 5
-
 
 class Box(pg.sprite.Sprite):
     def __init__(self, height, speed = 5):
@@ -143,7 +132,7 @@ def game_over(START, END):
 
         surface.fill((0, 0, 0))
         msg = f"Game Over - Survived {round(END - START, 2)} seconds"
-        text = font.render(msg, True, (255, 255, 255))
+        text = font.render(msg, True, WHITE)
         text_rect = text.get_rect()
         text_x = surface.get_width() / 2 - text_rect.width / 2
         text_y = surface.get_height() / 2 - text_rect.height / 2
