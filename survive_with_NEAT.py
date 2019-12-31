@@ -100,6 +100,7 @@ def main(genomes, config):
         g.fitness = 0
         ge.append(g)
 
+
     for i in range(10):
         box = Box()
         box.rect.x = random.randrange(SIZE_X)
@@ -123,17 +124,23 @@ def main(genomes, config):
 
         bird.moving(keys)
 
-        # for a in box_list:
-        #     print(a.rect.x)
-        #     print("##########")
-
+        # INPUT OUTPUT FOR LEARNING
         for x, bi in enumerate(bird_list):
             #bi.moving()
-            ge[x].fitness += 0.01
+            ge[x].fitness += 0.001
 
-            out = [bi.rect.x, bi.rect.y]
-            out.extend([i.rect.x for i in box_list])
-            out.extend([i.rect.y for i in box_list])
+            # distance = round(math.sqrt((bird.rect.centerx - box.rect.centerx)**2 + (bird.rect.centery - box.rect.centery)**2), 2)
+            out = [bi.rect.centerx, bi.rect.centery]
+            distances = [round(math.sqrt((bi.rect.centerx - i.rect.centerx)**2 + (bi.rect.centery - i.rect.centery)**2), 2) for i in box_list]
+            distance_mid = round(math.sqrt((bi.rect.centerx - SIZE_X/2)**2 + (bi.rect.centery - SIZE_Y/2)**2), 2)
+            out.extend(distances)
+            out.append(distance_mid)
+
+            # reward if close to mid
+
+            ge[x].fitness -= 0.05 * distance_mid
+
+            #out.extend([i.rect.y for i in box_list])
             #print("out", out)
             output = nets[x].activate(out)
 
@@ -148,6 +155,9 @@ def main(genomes, config):
 
         for box in box_list:
             box.moving()
+
+
+
 
         # detect if boxes hit by bird
         to_kill = []
@@ -167,8 +177,10 @@ def main(genomes, config):
             if ge.index(i) not  in to_kill:
                 new_ge.append(i)
 
+        ge = new_ge
 
-                END = time.time()
+
+                #END = time.time()
 
                 #time.sleep(1)
 
@@ -224,7 +236,7 @@ def run(config_file):
 
     winner = p.run(main,100)
     print('\nBest genome:\n{!s}'.format(winner))
-    pickle.dump(winner, f"{time.time()}.pickle")
+    #pickle.dump(winner, f"{time.time()}.pickle")
 
 
 if __name__ == '__main__':

@@ -95,7 +95,7 @@ def main():
     bird_list.add(bird)
     sprite_list.add(bird)
 
-    for i in range(20):
+    for i in range(1):
         box = Box()
         box.rect.x = random.randrange(SIZE_X)
         box.rect.y = random.randrange(100)
@@ -141,6 +141,10 @@ def main():
         #     print(box_hit, bird_hit)
 
             #pg.sprite.Sprite.kill(box_hit)
+
+        distance = round(math.sqrt((bird.rect.centerx - box.rect.centerx)**2 + (bird.rect.centery - box.rect.centery)**2), 2)
+        print(distance)
+
         for b in box_list:
             for x, bi in enumerate(bird_list):
                 if pg.sprite.collide_rect(b, bi):
